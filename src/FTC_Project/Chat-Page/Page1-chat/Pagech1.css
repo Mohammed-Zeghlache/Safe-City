@@ -1,0 +1,360 @@
+/* Pagech1 Page */
+.pagech1 {
+  width: 100%;
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: rgba(21, 23, 51, 0.95);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.pagech1-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  margin-bottom: 4rem;
+  flex-wrap: wrap;
+}
+
+.pagech1-text {
+  flex: 1;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.badge-text {
+  background: rgba(37, 99, 235, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 1rem;
+  border-radius: 40px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #60a5fa;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.pagech1-title {
+  font-family: 'Old Standard TT', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: white;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #fff, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.pagech1-description {
+  font-family: 'Old Standard TT', serif;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.pagech1-subdescription {
+  font-family: 'Old Standard TT', serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.pagech1-buttons {
+  display: flex;
+  gap: 1rem;
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.start-chat-btn {
+  font-family: 'Old Standard TT', serif;
+  font-weight: 400;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.start-chat-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.start-chat-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.start-chat-btn:hover::before {
+  left: 100%;
+}
+
+.learn-more-btn {
+  font-family: 'Old Standard TT', serif;
+  font-weight: 400;
+  font-size: 1rem;
+  background: transparent;
+  border: 2px solid rgba(37, 99, 235, 0.5);
+  color: white;
+  padding: 0.875rem 2rem;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.learn-more-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(37, 99, 235, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease, height 0.5s ease;
+}
+
+.learn-more-btn:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+}
+
+.learn-more-btn:hover::before {
+  width: 200px;
+  height: 200px;
+}
+
+.pagech1-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeInRight 0.8s ease-out;
+}
+
+.animated-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 20px;
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+  transition: all 0.3s ease;
+}
+
+.animated-image:hover {
+  transform: scale(1.02);
+  filter: drop-shadow(0 15px 30px rgba(37, 99, 235, 0.3));
+}
+
+/* Features Section */
+.features-highlight {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+  animation: fadeInUp 0.6s ease-out 0.5s both;
+}
+
+.feature-item {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-item:hover {
+  transform: translateY(-10px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.feature-item h3 {
+  font-family: 'Old Standard TT', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.feature-item p {
+  font-family: 'Old Standard TT', serif;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .pagech1 {
+    padding: 3rem 1.5rem;
+  }
+  
+  .pagech1-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .pagech1-title {
+    font-size: 2.5rem;
+  }
+  
+  .pagech1-description {
+    font-size: 1rem;
+  }
+  
+  .pagech1-subdescription {
+    font-size: 0.875rem;
+  }
+  
+  .pagech1-buttons {
+    justify-content: center;
+  }
+  
+  .features-highlight {
+    gap: 1.5rem;
+  }
+  
+  .feature-item {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-highlight {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagech1-title {
+    font-size: 2rem;
+  }
+  
+  .badge-text {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagech1 {
+    padding: 2rem 1rem;
+  }
+  
+  .pagech1-title {
+    font-size: 1.5rem;
+  }
+  
+  .pagech1-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .start-chat-btn, .learn-more-btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+  }
+  
+  .feature-item h3 {
+    font-size: 1.125rem;
+  }
+  
+  .feature-item p {
+    font-size: 0.75rem;
+  }
+}

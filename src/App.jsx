@@ -23,9 +23,7 @@ import Login from "./Admin/Login/Login";
 import Dashboard from './Admin/Dachboard/Dachboard';
 
 //Cart
-// import Header4 from "./FTC_Project/Carte/header4";
-import Header4 from './FTC_Project/Carte/Header4.jsx'
-
+import Header4 from "./FTC_Project/Carte/Header4.jsx";
 
 function App() {
   return (

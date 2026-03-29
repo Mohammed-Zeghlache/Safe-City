@@ -1,9 +1,8 @@
 import React from "react";
 import "../Lading3/Lading3.css";
 
-import water from "../../images/water.jpg";
+import water from '../../images/water.jpg'
 import agression from "../../images/agression.jpg";
-import autre from "../../images/autre.jpg";
 import déchet from "../../images/déchet.jpg";
 import eclairage2 from "../../images/eclairage2.jpg";
 import accident from "../../images/accident.jpg";

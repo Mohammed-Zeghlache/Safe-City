@@ -10,7 +10,7 @@ import HazardMap from "./FTC_Project/Lading_Page/Lading4-Map/HazardMap";
 //Chat Page
 import Header2 from "./FTC_Project/Chat-Page/Header-Chat/Header2";
 import Pagech1 from "./FTC_Project/Chat-Page/Page1-chat/Pagech1";
-import Chatbot from "./FTC_Project/Chat-Page/Container-chat/Chatbot";
+// import Chatbot from "./FTC_Project/Chat-Page/Container-chat/Chatbot";
 import Chatbot2 from "./Admin/Dashboard2/Chatbot2";
 
 //Notification page

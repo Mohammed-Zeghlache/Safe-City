@@ -105,10 +105,27 @@ function MapUpdater({ center, zoom }) {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
+
+  // ==================== MOBILE DETECTION ====================
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // ==================== STATE MANAGEMENT ====================
   const [activeMenu, setActiveMenu] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
@@ -126,7 +143,7 @@ const Dashboard = () => {
   const [selectedReports, setSelectedReports] = useState([]);
   const [timeRange, setTimeRange] = useState('week');
   const [chartType, setChartType] = useState('line');
-  
+
   // Filter States
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
@@ -134,12 +151,12 @@ const Dashboard = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  
+
   // Data States
   const [reports, setReports] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [activities, setActivities] = useState([]);
-  
+
   // Analytics States
   const [analyticsData, setAnalyticsData] = useState({
     dailyData: [],
@@ -160,19 +177,19 @@ const Dashboard = () => {
     topWilaya: '',
     topCategory: ''
   });
-  
+
   // Map States
   const [mapCenter, setMapCenter] = useState({ lat: 36.7538, lng: 3.0588 });
   const [mapZoom, setMapZoom] = useState(6);
   const [selectedWilaya, setSelectedWilaya] = useState(null);
   const [heatmapData, setHeatmapData] = useState([]);
-  
+
   // Live Report States
   const [liveReports, setLiveReports] = useState([]);
   const [showLiveReportForm, setShowLiveReportForm] = useState(false);
   const [liveLocation, setLiveLocation] = useState(null);
   const [weatherAlerts, setWeatherAlerts] = useState([]);
-  
+
   // Settings
   const [settings, setSettings] = useState({
     fullName: 'Admin User',
@@ -210,7 +227,7 @@ const Dashboard = () => {
     longitude: ''
   });
 
-  // Live Map specific states (moved from renderLiveMap)
+  // Live Map specific states
   const [searchWilaya, setSearchWilaya] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [mapKey, setMapKey] = useState(Date.now());
@@ -218,7 +235,7 @@ const Dashboard = () => {
 
   // Constants
   const wilayas = [
-    'Alger', 'Oran', 'Constantine', 'Annaba', 'Blida', 'Tizi Ouzou', 
+    'Alger', 'Oran', 'Constantine', 'Annaba', 'Blida', 'Tizi Ouzou',
     'Sétif', 'Béjaïa', 'Tipaza', 'Boumerdès', 'Aïn Defla', 'Bordj Bou Arréridj',
     'Bouira', 'Chlef', 'Djelfa', 'Guelma', 'Jijel', 'Laghouat', 'Mascara',
     'Médéa', 'Mila', 'Mostaganem', 'Naâma', 'Ouargla', 'Relizane', 'Saïda',
@@ -227,7 +244,7 @@ const Dashboard = () => {
     'El Tarf', 'Ghardaïa', 'Illizi', 'Khenchela', 'M\'Sila', 'Oum El Bouaghi',
     'Adrar', 'Tamanrasset'
   ];
-  
+
   // Wilaya coordinates mapping
   const wilayaCoordinates = {
     'Alger': { lat: 36.7538, lng: 3.0588 },
@@ -278,7 +295,7 @@ const Dashboard = () => {
     'Adrar': { lat: 27.8667, lng: -0.2833 },
     'Tamanrasset': { lat: 22.7850, lng: 5.5228 }
   };
-  
+
   const reportTypes = {
     accident: { label: 'Accident', icon: '🚗', color: '#ef4444', bg: '#fee2e2' },
     eclairage_publique: { label: 'Éclairage', icon: '💡', color: '#f59e0b', bg: '#fed7aa' },
@@ -329,10 +346,10 @@ const Dashboard = () => {
     const statusMap = new Map();
     const hourCount = Array(24).fill(0);
     const weekdayCount = Array(7).fill(0);
-    
+
     let resolvedCount = 0;
     let totalSatisfaction = 0;
-    
+
     reportsData.forEach(report => {
       const date = new Date(report.timestamp || report.date);
       const dayKey = date.toISOString().split('T')[0];
@@ -341,73 +358,61 @@ const Dashboard = () => {
       const yearKey = `${date.getFullYear()}`;
       const hour = date.getHours();
       const weekday = date.getDay();
-      
+
       dailyMap.set(dayKey, (dailyMap.get(dayKey) || 0) + 1);
       weeklyMap.set(weekKey, (weeklyMap.get(weekKey) || 0) + 1);
       monthlyMap.set(monthKey, (monthlyMap.get(monthKey) || 0) + 1);
       yearlyMap.set(yearKey, (yearlyMap.get(yearKey) || 0) + 1);
       hourCount[hour]++;
       weekdayCount[weekday]++;
-      
+
       const category = report.reportType;
       categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-      
+
       const wilaya = report.wilaya;
       wilayaMap.set(wilaya, (wilayaMap.get(wilaya) || 0) + 1);
-      
+
       const priority = report.priority;
       priorityMap.set(priority, (priorityMap.get(priority) || 0) + 1);
-      
+
       const status = report.status;
       statusMap.set(status, (statusMap.get(status) || 0) + 1);
-      
+
       if (report.status === 'resolved') {
         resolvedCount++;
         if (report.rating) totalSatisfaction += report.rating;
       }
     });
-    
+
     let peakHour = 0;
     let maxHourCount = 0;
     hourCount.forEach((count, hour) => {
-      if (count > maxHourCount) {
-        maxHourCount = count;
-        peakHour = hour;
-      }
+      if (count > maxHourCount) { maxHourCount = count; peakHour = hour; }
     });
-    
+
     const weekdays = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     let busiestDay = '';
     let maxDayCount = 0;
     weekdayCount.forEach((count, day) => {
-      if (count > maxDayCount) {
-        maxDayCount = count;
-        busiestDay = weekdays[day];
-      }
+      if (count > maxDayCount) { maxDayCount = count; busiestDay = weekdays[day]; }
     });
-    
+
     let topWilaya = '';
     let maxWilayaCount = 0;
     wilayaMap.forEach((count, wilaya) => {
-      if (count > maxWilayaCount) {
-        maxWilayaCount = count;
-        topWilaya = wilaya;
-      }
+      if (count > maxWilayaCount) { maxWilayaCount = count; topWilaya = wilaya; }
     });
-    
+
     let topCategory = '';
     let maxCategoryCount = 0;
     categoryMap.forEach((count, category) => {
-      if (count > maxCategoryCount) {
-        maxCategoryCount = count;
-        topCategory = reportTypes[category]?.label || category;
-      }
+      if (count > maxCategoryCount) { maxCategoryCount = count; topCategory = reportTypes[category]?.label || category; }
     });
-    
+
     const resolutionRate = reportsData.length > 0 ? (resolvedCount / reportsData.length) * 100 : 0;
     const satisfactionScore = resolvedCount > 0 ? totalSatisfaction / resolvedCount : 0;
     const responseTimeAvg = 24.5;
-    
+
     return {
       dailyData: Array.from(dailyMap.entries()).map(([date, count]) => ({ date, count })),
       weeklyData: Array.from(weeklyMap.entries()).map(([week, count]) => ({ week, count })),
@@ -444,18 +449,18 @@ const Dashboard = () => {
     } else {
       const sampleReports = [];
       const startDate = new Date(2024, 0, 1);
-      
+
       for (let i = 1; i <= 200; i++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + Math.floor(Math.random() * 365));
-        
+
         const types = Object.keys(reportTypes);
         const statuses = ['pending', 'in-progress', 'resolved'];
         const priorities = ['high', 'medium', 'low'];
         const wilayaIndex = Math.floor(Math.random() * wilayas.length);
         const wilayaName = wilayas[wilayaIndex];
         const coords = wilayaCoordinates[wilayaName] || { lat: 36.7538, lng: 3.0588 };
-        
+
         sampleReports.push({
           id: i,
           fullName: `Citoyen ${i}`,
@@ -475,7 +480,7 @@ const Dashboard = () => {
           longitude: coords.lng + (Math.random() - 0.5) * 0.5
         });
       }
-      
+
       setReports(sampleReports);
       setAnalyticsData(calculateAnalytics(sampleReports));
       localStorage.setItem('userReports', JSON.stringify(sampleReports));
@@ -531,14 +536,8 @@ const Dashboard = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLiveLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-          setMapCenter({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
+          setLiveLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+          setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
           setMapZoom(13);
           addNotification('Localisation', 'Position actuelle détectée', '📍');
         },
@@ -553,7 +552,7 @@ const Dashboard = () => {
   };
 
   const getPriorityIcon = (priority) => {
-    switch(priority) {
+    switch (priority) {
       case 'high': return highIcon;
       case 'medium': return mediumIcon;
       default: return lowIcon;
@@ -561,7 +560,7 @@ const Dashboard = () => {
   };
 
   const getCircleColor = (priority) => {
-    switch(priority) {
+    switch (priority) {
       case 'high': return '#dc2626';
       case 'medium': return '#f97316';
       default: return '#10b981';
@@ -569,7 +568,7 @@ const Dashboard = () => {
   };
 
   const getCircleRadius = (priority) => {
-    switch(priority) {
+    switch (priority) {
       case 'high': return 20;
       case 'medium': return 15;
       default: return 10;
@@ -605,9 +604,9 @@ const Dashboard = () => {
       alert('Veuillez remplir tous les champs obligatoires');
       return;
     }
-    
+
     const coords = wilayaCoordinates[liveReportForm.wilaya] || { lat: 36.7538, lng: 3.0588 };
-    
+
     const newReport = {
       id: Date.now(),
       ...liveReportForm,
@@ -619,7 +618,7 @@ const Dashboard = () => {
       status: 'pending',
       isLive: true
     };
-    
+
     setReports(prev => [newReport, ...prev]);
     setLiveReports(prev => [newReport, ...prev]);
     localStorage.setItem('userReports', JSON.stringify([newReport, ...reports]));
@@ -642,41 +641,28 @@ const Dashboard = () => {
     const resolved = reports.filter(r => r.status === 'resolved').length;
     const highPriority = reports.filter(r => r.priority === 'high').length;
     const resolutionRate = total > 0 ? ((resolved / total) * 100).toFixed(1) : 0;
-    
+
     return { total, pending, inProgress, resolved, highPriority, resolutionRate };
   }, [reports]);
 
   // ==================== FILTERED REPORTS ====================
   const filteredReports = useMemo(() => {
     let filtered = [...reports];
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(r => 
+      filtered = filtered.filter(r =>
         r.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.wilaya?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.phone?.includes(searchTerm)
       );
     }
-    
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(r => r.status === filterStatus);
-    }
-    
-    if (filterPriority !== 'all') {
-      filtered = filtered.filter(r => r.priority === filterPriority);
-    }
-    
-    if (filterWilaya !== 'all') {
-      filtered = filtered.filter(r => r.wilaya === filterWilaya);
-    }
-    
-    if (dateRange.start) {
-      filtered = filtered.filter(r => r.date >= dateRange.start);
-    }
-    if (dateRange.end) {
-      filtered = filtered.filter(r => r.date <= dateRange.end);
-    }
-    
+
+    if (filterStatus !== 'all') filtered = filtered.filter(r => r.status === filterStatus);
+    if (filterPriority !== 'all') filtered = filtered.filter(r => r.priority === filterPriority);
+    if (filterWilaya !== 'all') filtered = filtered.filter(r => r.wilaya === filterWilaya);
+    if (dateRange.start) filtered = filtered.filter(r => r.date >= dateRange.start);
+    if (dateRange.end) filtered = filtered.filter(r => r.date <= dateRange.end);
+
     return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [reports, searchTerm, filterStatus, filterPriority, filterWilaya, dateRange]);
 
@@ -685,12 +671,9 @@ const Dashboard = () => {
     currentPage * itemsPerPage
   );
 
-  // Map reports and stats for live map
   const mapReports = useMemo(() => {
     let filtered = reports.filter(r => r.latitude && r.longitude);
-    if (filterPriority !== 'all') {
-      filtered = filtered.filter(r => r.priority === filterPriority);
-    }
+    if (filterPriority !== 'all') filtered = filtered.filter(r => r.priority === filterPriority);
     return filtered;
   }, [reports, filterPriority]);
 
@@ -707,7 +690,7 @@ const Dashboard = () => {
       alert('Veuillez remplir tous les champs obligatoires');
       return;
     }
-    
+
     const newReport = {
       id: Date.now(),
       ...reportForm,
@@ -715,7 +698,7 @@ const Dashboard = () => {
       timestamp: new Date().toISOString(),
       reportId: `RPT-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
     };
-    
+
     setReports(prev => [newReport, ...prev]);
     localStorage.setItem('userReports', JSON.stringify([newReport, ...reports]));
     setAnalyticsData(calculateAnalytics([newReport, ...reports]));
@@ -730,7 +713,7 @@ const Dashboard = () => {
 
   const updateReport = () => {
     if (!selectedReport) return;
-    const updatedReports = reports.map(r => 
+    const updatedReports = reports.map(r =>
       r.id === selectedReport.id ? { ...r, ...reportForm } : r
     );
     setReports(updatedReports);
@@ -755,7 +738,7 @@ const Dashboard = () => {
   };
 
   const updateReportStatus = (id, newStatus) => {
-    const updatedReports = reports.map(r => 
+    const updatedReports = reports.map(r =>
       r.id === id ? { ...r, status: newStatus } : r
     );
     setReports(updatedReports);
@@ -771,7 +754,7 @@ const Dashboard = () => {
       reportTypes[r.reportType]?.label || r.reportType,
       r.description, r.status, r.priority, r.date
     ]);
-    
+
     const csvRows = [headers.join(','), ...data.map(row => row.map(cell => `"${cell || ''}"`).join(','))];
     const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -792,7 +775,7 @@ const Dashboard = () => {
   };
 
   const toggleSelectReport = (id) => {
-    setSelectedReports(prev => 
+    setSelectedReports(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -814,7 +797,7 @@ const Dashboard = () => {
   // ==================== CHART DATA ====================
   const getChartData = () => {
     const lastData = analyticsData.dailyData.slice(-30);
-    
+
     const lineChartData = {
       labels: lastData.map(d => d.date),
       datasets: [{
@@ -832,7 +815,7 @@ const Dashboard = () => {
         pointHoverRadius: 6
       }]
     };
-    
+
     const barChartData = {
       labels: analyticsData.categoryStats.map(c => c.category),
       datasets: [{
@@ -843,7 +826,7 @@ const Dashboard = () => {
         barPercentage: 0.7
       }]
     };
-    
+
     const pieChartData = {
       labels: analyticsData.statusStats.map(s => {
         const statusMap = { pending: 'En attente', 'in-progress': 'En cours', resolved: 'Résolu' };
@@ -855,7 +838,7 @@ const Dashboard = () => {
         borderWidth: 0
       }]
     };
-    
+
     const doughnutChartData = {
       labels: analyticsData.priorityStats.map(p => {
         const priorityMap = { high: 'Haute', medium: 'Moyenne', low: 'Basse' };
@@ -867,7 +850,7 @@ const Dashboard = () => {
         borderWidth: 0
       }]
     };
-    
+
     const radarChartData = {
       labels: analyticsData.wilayaStats.slice(0, 8).map(w => w.wilaya),
       datasets: [{
@@ -882,7 +865,7 @@ const Dashboard = () => {
         pointRadius: 4
       }]
     };
-    
+
     const hourlyChartData = {
       labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
       datasets: [{
@@ -894,7 +877,7 @@ const Dashboard = () => {
         borderRadius: 5
       }]
     };
-    
+
     const weekdayChartData = {
       labels: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
       datasets: [{
@@ -907,10 +890,10 @@ const Dashboard = () => {
         fill: true
       }]
     };
-    
+
     return { lineChartData, barChartData, pieChartData, doughnutChartData, radarChartData, hourlyChartData, weekdayChartData };
   };
-  
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -950,7 +933,7 @@ const Dashboard = () => {
     loadActivities();
     loadLiveReports();
     loadWeatherAlerts();
-    
+
     const handleNewReport = (event) => {
       const newReport = event.detail;
       setReports(prev => {
@@ -960,7 +943,7 @@ const Dashboard = () => {
       });
       addNotification('Nouveau signalement', `${newReport.fullName} a soumis un signalement`, '📱');
     };
-    
+
     window.addEventListener('newReportAdded', handleNewReport);
     return () => window.removeEventListener('newReportAdded', handleNewReport);
   }, []);
@@ -974,7 +957,6 @@ const Dashboard = () => {
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 
-  // Fullscreen change effect
   useEffect(() => {
     const handleFullscreenChange = () => {
       setShowFullscreen(!!document.fullscreenElement);
@@ -1006,7 +988,13 @@ const Dashboard = () => {
     return <span className="priority-badge" style={{ background: p.bg, color: p.color }}>{p.icon} {p.text}</span>;
   };
 
-  // ==================== LIVE MAP COMPONENT (now a proper component without hooks) ====================
+  // ==================== HANDLE MENU CLICK ON MOBILE ====================
+  const handleMenuClick = (menuId) => {
+    setActiveMenu(menuId);
+    if (isMobile) setSidebarOpen(false); // close sidebar after nav on mobile
+  };
+
+  // ==================== LIVE MAP COMPONENT ====================
   const LiveMapComponent = () => (
     <div className={`live-map-content ${showFullscreen ? 'fullscreen-map' : ''}`}>
       <div className="map-header">
@@ -1043,51 +1031,27 @@ const Dashboard = () => {
       <div className="map-stats-dashboard">
         <div className="map-stat-card total" onClick={() => { setFilterPriority('all'); setMapZoom(6); setMapCenter({ lat: 28.0339, lng: 1.6596 }); }}>
           <div className="map-stat-icon">📊</div>
-          <div className="map-stat-info">
-            <h3>{mapStats.total}</h3>
-            <p>Total Signalements</p>
-          </div>
+          <div className="map-stat-info"><h3>{mapStats.total}</h3><p>Total Signalements</p></div>
         </div>
         <div className="map-stat-card red" onClick={() => setFilterPriority('high')}>
           <div className="map-stat-icon">🔴</div>
-          <div className="map-stat-info">
-            <h3>{mapStats.high}</h3>
-            <p>Haute Priorité</p>
-          </div>
+          <div className="map-stat-info"><h3>{mapStats.high}</h3><p>Haute Priorité</p></div>
         </div>
         <div className="map-stat-card orange" onClick={() => setFilterPriority('medium')}>
           <div className="map-stat-icon">🟠</div>
-          <div className="map-stat-info">
-            <h3>{mapStats.medium}</h3>
-            <p>Priorité Moyenne</p>
-          </div>
+          <div className="map-stat-info"><h3>{mapStats.medium}</h3><p>Priorité Moyenne</p></div>
         </div>
         <div className="map-stat-card green" onClick={() => setFilterPriority('low')}>
           <div className="map-stat-icon">🟢</div>
-          <div className="map-stat-info">
-            <h3>{mapStats.low}</h3>
-            <p>Basse Priorité</p>
-          </div>
+          <div className="map-stat-info"><h3>{mapStats.low}</h3><p>Basse Priorité</p></div>
         </div>
       </div>
 
       <div className="map-legend-container">
-        <div className="legend-item">
-          <div className="legend-color red"></div>
-          <span>Haute Priorité - Urgent</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color orange"></div>
-          <span>Priorité Moyenne</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color green"></div>
-          <span>Basse Priorité</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-marker">📍</div>
-          <span>Position actuelle</span>
-        </div>
+        <div className="legend-item"><div className="legend-color red"></div><span>Haute Priorité - Urgent</span></div>
+        <div className="legend-item"><div className="legend-color orange"></div><span>Priorité Moyenne</span></div>
+        <div className="legend-item"><div className="legend-color green"></div><span>Basse Priorité</span></div>
+        <div className="legend-item"><div className="legend-marker">📍</div><span>Position actuelle</span></div>
       </div>
 
       <div className="map-container-full">
@@ -1103,19 +1067,15 @@ const Dashboard = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          
           <MapUpdater center={mapCenter} zoom={mapZoom} />
-          
+
           {liveLocation && (
             <Marker
               position={[liveLocation.lat, liveLocation.lng]}
               icon={new L.Icon({
                 iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
                 shadowUrl: markerShadow,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
               })}
             >
               <Popup>
@@ -1123,24 +1083,19 @@ const Dashboard = () => {
                   <h3>📍 Votre position</h3>
                   <p>Latitude: {liveLocation.lat.toFixed(6)}</p>
                   <p>Longitude: {liveLocation.lng.toFixed(6)}</p>
-                  <button className="details-btn" onClick={() => setActiveMenu('live-report')}>
-                    Signaler ici
-                  </button>
+                  <button className="details-btn" onClick={() => handleMenuClick('live-report')}>Signaler ici</button>
                 </div>
               </Popup>
             </Marker>
           )}
-          
+
           {searchResults && (
             <Marker
               position={[searchResults.lat, searchResults.lng]}
               icon={new L.Icon({
                 iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
                 shadowUrl: markerShadow,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
               })}
             >
               <Popup>
@@ -1152,7 +1107,7 @@ const Dashboard = () => {
               </Popup>
             </Marker>
           )}
-          
+
           {mapReports.map((report) => (
             <React.Fragment key={report.id}>
               <CircleMarker
@@ -1172,29 +1127,18 @@ const Dashboard = () => {
                   </div>
                 </Tooltip>
               </CircleMarker>
-              
-              <Marker
-                position={[report.latitude, report.longitude]}
-                icon={getPriorityIcon(report.priority)}
-              >
+
+              <Marker position={[report.latitude, report.longitude]} icon={getPriorityIcon(report.priority)}>
                 <Popup>
                   <div className="popup-content">
                     <h3>{reportTypes[report.reportType]?.icon} {report.fullName}</h3>
-                    <div className={`severity-badge ${report.priority}`}>
-                      {report.priority.toUpperCase()} Priorité
-                    </div>
+                    <div className={`severity-badge ${report.priority}`}>{report.priority.toUpperCase()} Priorité</div>
                     <p><strong>📋 Type:</strong> {reportTypes[report.reportType]?.label}</p>
                     <p><strong>📍 Wilaya:</strong> {report.wilaya}</p>
                     <p><strong>📝 Description:</strong> {report.description}</p>
                     <p><strong>🕒 Date:</strong> {new Date(report.timestamp).toLocaleString()}</p>
                     <p><strong>📊 Statut:</strong> {getStatusBadge(report.status)}</p>
-                    <button 
-                      className="details-btn" 
-                      onClick={() => {
-                        setSelectedReport(report);
-                        setShowReportModal(true);
-                      }}
-                    >
+                    <button className="details-btn" onClick={() => { setSelectedReport(report); setShowReportModal(true); }}>
                       Voir les détails
                     </button>
                   </div>
@@ -1226,7 +1170,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <button className="quick-report-fab" onClick={() => setActiveMenu('live-report')}>
+      <button className="quick-report-fab" onClick={() => handleMenuClick('live-report')}>
         <FiPlus /> Signalement direct
       </button>
     </div>
@@ -1239,73 +1183,46 @@ const Dashboard = () => {
         <h2><FiMapPin /> Signalement en direct</h2>
         <p>Ajoutez un signalement avec votre position actuelle</p>
       </div>
-      
+
       <div className="live-report-form">
         <div className="form-grid">
           <div className="form-group">
             <label><FiUser /> Nom complet *</label>
-            <input 
-              type="text" 
-              value={liveReportForm.fullName} 
-              onChange={(e) => setLiveReportForm({...liveReportForm, fullName: e.target.value})}
-              placeholder="Entrez votre nom"
-            />
+            <input type="text" value={liveReportForm.fullName} onChange={(e) => setLiveReportForm({ ...liveReportForm, fullName: e.target.value })} placeholder="Entrez votre nom" />
           </div>
-          
           <div className="form-group">
             <label><FiPhone /> Téléphone</label>
-            <input 
-              type="tel" 
-              value={liveReportForm.phone} 
-              onChange={(e) => setLiveReportForm({...liveReportForm, phone: e.target.value})}
-              placeholder="Numéro de téléphone"
-            />
+            <input type="tel" value={liveReportForm.phone} onChange={(e) => setLiveReportForm({ ...liveReportForm, phone: e.target.value })} placeholder="Numéro de téléphone" />
           </div>
-          
           <div className="form-group">
             <label><FiMapPin /> Wilaya *</label>
-            <select value={liveReportForm.wilaya} onChange={(e) => setLiveReportForm({...liveReportForm, wilaya: e.target.value})}>
+            <select value={liveReportForm.wilaya} onChange={(e) => setLiveReportForm({ ...liveReportForm, wilaya: e.target.value })}>
               <option value="">Sélectionner une wilaya</option>
               {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
             </select>
           </div>
-          
           <div className="form-group">
             <label><MdLocationOn /> Adresse</label>
-            <input 
-              type="text" 
-              value={liveReportForm.address} 
-              onChange={(e) => setLiveReportForm({...liveReportForm, address: e.target.value})}
-              placeholder="Adresse précise"
-            />
+            <input type="text" value={liveReportForm.address} onChange={(e) => setLiveReportForm({ ...liveReportForm, address: e.target.value })} placeholder="Adresse précise" />
           </div>
-          
           <div className="form-group">
             <label><MdReport /> Type de signalement *</label>
-            <select value={liveReportForm.reportType} onChange={(e) => setLiveReportForm({...liveReportForm, reportType: e.target.value})}>
+            <select value={liveReportForm.reportType} onChange={(e) => setLiveReportForm({ ...liveReportForm, reportType: e.target.value })}>
               {Object.entries(reportTypes).map(([key, val]) => <option key={key} value={key}>{val.icon} {val.label}</option>)}
             </select>
           </div>
-          
           <div className="form-group">
             <label><MdPriorityHigh /> Priorité</label>
-            <select value={liveReportForm.priority} onChange={(e) => setLiveReportForm({...liveReportForm, priority: e.target.value})}>
+            <select value={liveReportForm.priority} onChange={(e) => setLiveReportForm({ ...liveReportForm, priority: e.target.value })}>
               <option value="high">Haute - Urgent</option>
               <option value="medium">Moyenne</option>
               <option value="low">Basse</option>
             </select>
           </div>
-          
           <div className="form-group full-width">
             <label><MdDescription /> Description *</label>
-            <textarea 
-              rows="4" 
-              value={liveReportForm.description} 
-              onChange={(e) => setLiveReportForm({...liveReportForm, description: e.target.value})}
-              placeholder="Décrivez l'incident en détail..."
-            />
+            <textarea rows="4" value={liveReportForm.description} onChange={(e) => setLiveReportForm({ ...liveReportForm, description: e.target.value })} placeholder="Décrivez l'incident en détail..." />
           </div>
-          
           <div className="form-group full-width">
             <label><FiCompass /> Position GPS</label>
             <div className="gps-controls">
@@ -1321,9 +1238,9 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="form-actions">
-          <button className="cancel-btn" onClick={() => setActiveMenu('dashboard')}>Annuler</button>
+          <button className="cancel-btn" onClick={() => handleMenuClick('dashboard')}>Annuler</button>
           <button className="submit-btn" onClick={addLiveReport}>
             <FiMapPin /> Soumettre le signalement
           </button>
@@ -1403,45 +1320,27 @@ const Dashboard = () => {
       <div className="kpi-grid">
         <div className="kpi-card">
           <div className="kpi-icon"><FaChartLineIcon /></div>
-          <div className="kpi-info">
-            <h3>{analyticsData.resolutionRate.toFixed(1)}%</h3>
-            <p>Taux de résolution</p>
-          </div>
+          <div className="kpi-info"><h3>{analyticsData.resolutionRate.toFixed(1)}%</h3><p>Taux de résolution</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon"><FiClock /></div>
-          <div className="kpi-info">
-            <h3>{analyticsData.responseTimeAvg}h</h3>
-            <p>Temps de réponse moyen</p>
-          </div>
+          <div className="kpi-info"><h3>{analyticsData.responseTimeAvg}h</h3><p>Temps de réponse moyen</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon"><FiStar /></div>
-          <div className="kpi-info">
-            <h3>{analyticsData.satisfactionScore}/5</h3>
-            <p>Satisfaction citoyenne</p>
-          </div>
+          <div className="kpi-info"><h3>{analyticsData.satisfactionScore}/5</h3><p>Satisfaction citoyenne</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon"><FiTrend /></div>
-          <div className="kpi-info">
-            <h3>{analyticsData.peakHour}:00</h3>
-            <p>Heure de pointe</p>
-          </div>
+          <div className="kpi-info"><h3>{analyticsData.peakHour}:00</h3><p>Heure de pointe</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon"><FiAward /></div>
-          <div className="kpi-info">
-            <h3>{analyticsData.topWilaya || 'Alger'}</h3>
-            <p>Wilaya la plus active</p>
-          </div>
+          <div className="kpi-info"><h3>{analyticsData.topWilaya || 'Alger'}</h3><p>Wilaya la plus active</p></div>
         </div>
         <div className="kpi-card">
           <div className="kpi-icon"><FiTarget /></div>
-          <div className="kpi-info">
-            <h3>{analyticsData.topCategory}</h3>
-            <p>Type le plus fréquent</p>
-          </div>
+          <div className="kpi-info"><h3>{analyticsData.topCategory}</h3><p>Type le plus fréquent</p></div>
         </div>
       </div>
 
@@ -1455,98 +1354,71 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="chart-container">
-            {chartType === 'line' ? (
-              <Line data={chartData.lineChartData} options={chartOptions} />
-            ) : (
-              <Bar data={chartData.lineChartData} options={chartOptions} />
-            )}
+            {chartType === 'line' ? <Line data={chartData.lineChartData} options={chartOptions} /> : <Bar data={chartData.lineChartData} options={chartOptions} />}
           </div>
         </div>
 
         <div className="chart-card">
           <h3><FaChartBar /> Répartition par type</h3>
-          <div className="chart-container">
-            <Bar data={chartData.barChartData} options={chartOptions} />
-          </div>
+          <div className="chart-container"><Bar data={chartData.barChartData} options={chartOptions} /></div>
         </div>
 
         <div className="chart-card">
           <h3><FaChartPie /> Statut des signalements</h3>
-          <div className="chart-container">
-            <Pie data={chartData.pieChartData} options={chartOptions} />
-          </div>
+          <div className="chart-container"><Pie data={chartData.pieChartData} options={chartOptions} /></div>
         </div>
 
         <div className="chart-card">
           <h3>Priorités</h3>
-          <div className="chart-container">
-            <Doughnut data={chartData.doughnutChartData} options={chartOptions} />
-          </div>
+          <div className="chart-container"><Doughnut data={chartData.doughnutChartData} options={chartOptions} /></div>
         </div>
 
         <div className="chart-card large">
           <h3><FaMapMarkedAlt /> Distribution par wilaya</h3>
-          <div className="chart-container">
-            <Radar data={chartData.radarChartData} options={chartOptions} />
-          </div>
+          <div className="chart-container"><Radar data={chartData.radarChartData} options={chartOptions} /></div>
         </div>
 
         <div className="chart-card">
           <h3>📊 Distribution horaire</h3>
-          <div className="chart-container">
-            <Bar data={chartData.hourlyChartData} options={chartOptions} />
-          </div>
+          <div className="chart-container"><Bar data={chartData.hourlyChartData} options={chartOptions} /></div>
         </div>
 
         <div className="chart-card">
           <h3>📅 Distribution par jour</h3>
-          <div className="chart-container">
-            <Line data={chartData.weekdayChartData} options={chartOptions} />
-          </div>
+          <div className="chart-container"><Line data={chartData.weekdayChartData} options={chartOptions} /></div>
         </div>
       </div>
 
       <div className="wilaya-stats-section">
         <div className="section-header">
           <h3><FiMapPin /> Statistiques détaillées par wilaya</h3>
-          <input 
-            type="text" 
-            placeholder="Filtrer wilaya..." 
-            className="wilaya-search"
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <input type="text" placeholder="Filtrer wilaya..." className="wilaya-search" onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         <div className="wilaya-table-container">
           <table className="wilaya-table">
             <thead>
               <tr>
-                <th>Wilaya</th>
-                <th>Nombre de signalements</th>
-                <th>Pourcentage</th>
-                <th>Tendance</th>
-                <th>Statut moyen</th>
+                <th>Wilaya</th><th>Nombre de signalements</th><th>Pourcentage</th><th>Tendance</th><th>Statut moyen</th>
               </tr>
             </thead>
             <tbody>
-              {analyticsData.wilayaStats
-                .sort((a, b) => b.count - a.count)
-                .map(wilaya => {
-                  const percentage = ((wilaya.count / stats.total) * 100).toFixed(1);
-                  return (
-                    <tr key={wilaya.wilaya}>
-                      <td><strong>{wilaya.wilaya}</strong></td>
-                      <td>{wilaya.count}</td>
-                      <td>
-                        <div className="percentage-bar">
-                          <div className="percentage-fill" style={{ width: `${percentage}%` }}></div>
-                          <span>{percentage}%</span>
-                        </div>
-                      </td>
-                      <td>{percentage > 10 ? '📈 Haut' : percentage > 5 ? '📊 Moyen' : '📉 Bas'}</td>
-                      <td>{getStatusBadge('in-progress')}</td>
-                    </tr>
-                  );
-                })}
+              {analyticsData.wilayaStats.sort((a, b) => b.count - a.count).map(wilaya => {
+                const percentage = ((wilaya.count / stats.total) * 100).toFixed(1);
+                return (
+                  <tr key={wilaya.wilaya}>
+                    <td><strong>{wilaya.wilaya}</strong></td>
+                    <td>{wilaya.count}</td>
+                    <td>
+                      <div className="percentage-bar">
+                        <div className="percentage-fill" style={{ width: `${percentage}%` }}></div>
+                        <span>{percentage}%</span>
+                      </div>
+                    </td>
+                    <td>{percentage > 10 ? '📈 Haut' : percentage > 5 ? '📊 Moyen' : '📉 Bas'}</td>
+                    <td>{getStatusBadge('in-progress')}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1645,8 +1517,8 @@ const Dashboard = () => {
             <option value="all">Toutes wilayas</option>
             {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
           </select>
-          <input type="date" placeholder="Date début" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} />
-          <input type="date" placeholder="Date fin" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} />
+          <input type="date" value={dateRange.start} onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })} />
+          <input type="date" value={dateRange.end} onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })} />
         </div>
       )}
 
@@ -1655,14 +1527,7 @@ const Dashboard = () => {
           <thead>
             <tr>
               <th><input type="checkbox" onChange={toggleSelectAll} checked={selectedReports.length === paginatedReports.length && paginatedReports.length > 0} /></th>
-              <th>ID</th>
-              <th>Citoyen</th>
-              <th>Wilaya</th>
-              <th>Type</th>
-              <th>Statut</th>
-              <th>Priorité</th>
-              <th>Date</th>
-              <th>Actions</th>
+              <th>ID</th><th>Citoyen</th><th>Wilaya</th><th>Type</th><th>Statut</th><th>Priorité</th><th>Date</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -1713,21 +1578,17 @@ const Dashboard = () => {
   // Dashboard Home
   const DashboardHome = () => (
     <div className="dashboard-content">
-      {/* Quick Actions Bar */}
       <div className="quick-actions">
-        <button className="quick-action-btn" onClick={() => setActiveMenu('live-map')}>
-          <FiMap /> Carte en direct
-        </button>
-        <button className="quick-action-btn" onClick={() => setActiveMenu('live-report')}>
-          <FiMapPin /> Signalement direct
-        </button>
-        <button className="quick-action-btn" onClick={() => loadWeatherAlerts()}>
-          <FiCloudRain /> Météo
-        </button>
+        <button className="quick-action-btn" onClick={() => handleMenuClick('live-map')}><FiMap /> Carte en direct</button>
+        <button className="quick-action-btn" onClick={() => handleMenuClick('live-report')}><FiMapPin /> Signalement direct</button>
+        <button className="quick-action-btn" onClick={() => loadWeatherAlerts()}><FiCloudRain /> Météo</button>
       </div>
       <StatsCards />
       <div className="recent-reports">
-        <div className="section-header"><h2>Signalements récents</h2><button className="view-all" onClick={() => setActiveMenu('reports')}>Voir tout →</button></div>
+        <div className="section-header">
+          <h2>Signalements récents</h2>
+          <button className="view-all" onClick={() => handleMenuClick('reports')}>Voir tout →</button>
+        </div>
         <div className="table-container">
           <table className="reports-table">
             <thead>
@@ -1758,14 +1619,14 @@ const Dashboard = () => {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header"><h3>Nouveau signalement</h3><button onClick={() => setShowAddModal(false)}><FiX /></button></div>
         <div className="modal-body">
-          <div className="form-group"><label><FiUser /> Nom complet *</label><input type="text" value={reportForm.fullName} onChange={(e) => setReportForm({...reportForm, fullName: e.target.value})} /></div>
-          <div className="form-group"><label><FiPhone /> Téléphone</label><input type="tel" value={reportForm.phone} onChange={(e) => setReportForm({...reportForm, phone: e.target.value})} /></div>
-          <div className="form-group"><label><MdEmail /> Email</label><input type="email" value={reportForm.email} onChange={(e) => setReportForm({...reportForm, email: e.target.value})} /></div>
-          <div className="form-group"><label><FiMapPin /> Wilaya *</label><select value={reportForm.wilaya} onChange={(e) => setReportForm({...reportForm, wilaya: e.target.value})}><option value="">Sélectionner</option>{wilayas.map(w => <option key={w} value={w}>{w}</option>)}</select></div>
-          <div className="form-group"><label><MdLocationOn /> Adresse</label><input type="text" value={reportForm.address} onChange={(e) => setReportForm({...reportForm, address: e.target.value})} /></div>
-          <div className="form-group"><label><MdReport /> Type *</label><select value={reportForm.reportType} onChange={(e) => setReportForm({...reportForm, reportType: e.target.value})}>{Object.entries(reportTypes).map(([key, val]) => <option key={key} value={key}>{val.icon} {val.label}</option>)}</select></div>
-          <div className="form-group"><label><MdPriorityHigh /> Priorité</label><select value={reportForm.priority} onChange={(e) => setReportForm({...reportForm, priority: e.target.value})}><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Basse</option></select></div>
-          <div className="form-group full-width"><label><MdDescription /> Description *</label><textarea rows="4" value={reportForm.description} onChange={(e) => setReportForm({...reportForm, description: e.target.value})} /></div>
+          <div className="form-group"><label><FiUser /> Nom complet *</label><input type="text" value={reportForm.fullName} onChange={(e) => setReportForm({ ...reportForm, fullName: e.target.value })} /></div>
+          <div className="form-group"><label><FiPhone /> Téléphone</label><input type="tel" value={reportForm.phone} onChange={(e) => setReportForm({ ...reportForm, phone: e.target.value })} /></div>
+          <div className="form-group"><label><MdEmail /> Email</label><input type="email" value={reportForm.email} onChange={(e) => setReportForm({ ...reportForm, email: e.target.value })} /></div>
+          <div className="form-group"><label><FiMapPin /> Wilaya *</label><select value={reportForm.wilaya} onChange={(e) => setReportForm({ ...reportForm, wilaya: e.target.value })}><option value="">Sélectionner</option>{wilayas.map(w => <option key={w} value={w}>{w}</option>)}</select></div>
+          <div className="form-group"><label><MdLocationOn /> Adresse</label><input type="text" value={reportForm.address} onChange={(e) => setReportForm({ ...reportForm, address: e.target.value })} /></div>
+          <div className="form-group"><label><MdReport /> Type *</label><select value={reportForm.reportType} onChange={(e) => setReportForm({ ...reportForm, reportType: e.target.value })}>{Object.entries(reportTypes).map(([key, val]) => <option key={key} value={key}>{val.icon} {val.label}</option>)}</select></div>
+          <div className="form-group"><label><MdPriorityHigh /> Priorité</label><select value={reportForm.priority} onChange={(e) => setReportForm({ ...reportForm, priority: e.target.value })}><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Basse</option></select></div>
+          <div className="form-group full-width"><label><MdDescription /> Description *</label><textarea rows="4" value={reportForm.description} onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })} /></div>
         </div>
         <div className="modal-actions"><button className="cancel" onClick={() => setShowAddModal(false)}>Annuler</button><button className="save" onClick={addReport}>Enregistrer</button></div>
       </div>
@@ -1777,14 +1638,14 @@ const Dashboard = () => {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header"><h3>Modifier signalement #{selectedReport?.id}</h3><button onClick={() => setShowEditModal(false)}><FiX /></button></div>
         <div className="modal-body">
-          <div className="form-group"><label><FiUser /> Nom complet</label><input type="text" value={reportForm.fullName} onChange={(e) => setReportForm({...reportForm, fullName: e.target.value})} /></div>
-          <div className="form-group"><label><FiPhone /> Téléphone</label><input type="tel" value={reportForm.phone} onChange={(e) => setReportForm({...reportForm, phone: e.target.value})} /></div>
-          <div className="form-group"><label><MdEmail /> Email</label><input type="email" value={reportForm.email} onChange={(e) => setReportForm({...reportForm, email: e.target.value})} /></div>
-          <div className="form-group"><label><FiMapPin /> Wilaya</label><select value={reportForm.wilaya} onChange={(e) => setReportForm({...reportForm, wilaya: e.target.value})}>{wilayas.map(w => <option key={w} value={w}>{w}</option>)}</select></div>
-          <div className="form-group"><label><MdReport /> Type</label><select value={reportForm.reportType} onChange={(e) => setReportForm({...reportForm, reportType: e.target.value})}>{Object.entries(reportTypes).map(([key, val]) => <option key={key} value={key}>{val.icon} {val.label}</option>)}</select></div>
-          <div className="form-group"><label><FiClock /> Statut</label><select value={reportForm.status} onChange={(e) => setReportForm({...reportForm, status: e.target.value})}><option value="pending">En attente</option><option value="in-progress">En cours</option><option value="resolved">Résolu</option></select></div>
-          <div className="form-group"><label><MdPriorityHigh /> Priorité</label><select value={reportForm.priority} onChange={(e) => setReportForm({...reportForm, priority: e.target.value})}><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Basse</option></select></div>
-          <div className="form-group full-width"><label><MdDescription /> Description</label><textarea rows="4" value={reportForm.description} onChange={(e) => setReportForm({...reportForm, description: e.target.value})} /></div>
+          <div className="form-group"><label><FiUser /> Nom complet</label><input type="text" value={reportForm.fullName} onChange={(e) => setReportForm({ ...reportForm, fullName: e.target.value })} /></div>
+          <div className="form-group"><label><FiPhone /> Téléphone</label><input type="tel" value={reportForm.phone} onChange={(e) => setReportForm({ ...reportForm, phone: e.target.value })} /></div>
+          <div className="form-group"><label><MdEmail /> Email</label><input type="email" value={reportForm.email} onChange={(e) => setReportForm({ ...reportForm, email: e.target.value })} /></div>
+          <div className="form-group"><label><FiMapPin /> Wilaya</label><select value={reportForm.wilaya} onChange={(e) => setReportForm({ ...reportForm, wilaya: e.target.value })}>{wilayas.map(w => <option key={w} value={w}>{w}</option>)}</select></div>
+          <div className="form-group"><label><MdReport /> Type</label><select value={reportForm.reportType} onChange={(e) => setReportForm({ ...reportForm, reportType: e.target.value })}>{Object.entries(reportTypes).map(([key, val]) => <option key={key} value={key}>{val.icon} {val.label}</option>)}</select></div>
+          <div className="form-group"><label><FiClock /> Statut</label><select value={reportForm.status} onChange={(e) => setReportForm({ ...reportForm, status: e.target.value })}><option value="pending">En attente</option><option value="in-progress">En cours</option><option value="resolved">Résolu</option></select></div>
+          <div className="form-group"><label><MdPriorityHigh /> Priorité</label><select value={reportForm.priority} onChange={(e) => setReportForm({ ...reportForm, priority: e.target.value })}><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Basse</option></select></div>
+          <div className="form-group full-width"><label><MdDescription /> Description</label><textarea rows="4" value={reportForm.description} onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })} /></div>
         </div>
         <div className="modal-actions"><button className="cancel" onClick={() => setShowEditModal(false)}>Annuler</button><button className="save" onClick={updateReport}>Mettre à jour</button></div>
       </div>
@@ -1795,7 +1656,10 @@ const Dashboard = () => {
     <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header"><h3>Confirmer la suppression</h3><button onClick={() => setShowDeleteModal(false)}><FiX /></button></div>
-        <div className="modal-body"><p>Êtes-vous sûr de vouloir supprimer le signalement <strong>#{selectedReport?.id}</strong> de <strong>{selectedReport?.fullName}</strong> ?</p><p className="warning">Cette action est irréversible.</p></div>
+        <div className="modal-body">
+          <p>Êtes-vous sûr de vouloir supprimer le signalement <strong>#{selectedReport?.id}</strong> de <strong>{selectedReport?.fullName}</strong> ?</p>
+          <p className="warning">Cette action est irréversible.</p>
+        </div>
         <div className="modal-actions"><button className="cancel" onClick={() => setShowDeleteModal(false)}>Annuler</button><button className="delete" onClick={deleteReport}>Supprimer</button></div>
       </div>
     </div>
@@ -1818,18 +1682,35 @@ const Dashboard = () => {
           <div className="detail-row"><label>Date:</label><p>{selectedReport?.date}</p></div>
           {selectedReport?.reportId && <div className="detail-row"><label>ID Signalement:</label><p><code>{selectedReport.reportId}</code></p></div>}
         </div>
-        <div className="modal-actions"><button className="cancel" onClick={() => setShowReportModal(false)}>Fermer</button><button className="edit" onClick={() => { setShowReportModal(false); setShowEditModal(true); }}>Modifier</button></div>
+        <div className="modal-actions">
+          <button className="cancel" onClick={() => setShowReportModal(false)}>Fermer</button>
+          <button className="edit" onClick={() => { setShowReportModal(false); setShowEditModal(true); }}>Modifier</button>
+        </div>
       </div>
     </div>
   );
 
   const NotificationsDropdown = () => (
     <div className="notifications-dropdown">
-      <div className="dropdown-header"><h3>Notifications</h3><button onClick={markAllNotificationsRead}>Tout marquer lu</button></div>
+      <div className="dropdown-header">
+        <h3>Notifications</h3>
+        <button onClick={markAllNotificationsRead}>Tout marquer lu</button>
+      </div>
       <div className="notifications-list">
-        {notifications.length === 0 ? <div className="empty-notifications">Aucune notification</div> : notifications.slice(0, 10).map(notif => (
-          <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`}><div className="notif-icon">{notif.icon}</div><div className="notif-content"><h4>{notif.title}</h4><p>{notif.message}</p><span>{new Date(notif.timestamp).toLocaleString()}</span></div></div>
-        ))}
+        {notifications.length === 0 ? (
+          <div className="empty-notifications">Aucune notification</div>
+        ) : (
+          notifications.slice(0, 10).map(notif => (
+            <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`}>
+              <div className="notif-icon">{notif.icon}</div>
+              <div className="notif-content">
+                <h4>{notif.title}</h4>
+                <p>{notif.message}</p>
+                <span>{new Date(notif.timestamp).toLocaleString()}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
@@ -1837,16 +1718,36 @@ const Dashboard = () => {
   // ==================== MAIN RENDER ====================
   return (
     <div className={`dashboard ${darkMode ? 'dark' : 'light'}`}>
+
+      {/* ========== MOBILE OVERLAY — closes sidebar when tapping outside ========== */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="sidebar-overlay visible"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
-          <div className="logo"><div className="logo-icon"><MdDashboard /></div>{sidebarOpen && <h2>SafeCity<span>Admin</span></h2>}</div>
-          <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? <FiX /> : <FiMenu />}</button>
+          <div className="logo">
+            <div className="logo-icon"><MdDashboard /></div>
+            {sidebarOpen && <h2>SafeCity<span>Admin</span></h2>}
+          </div>
+          {/* This button closes the sidebar — only visible when sidebar is open */}
+          <button className="toggle-btn" onClick={() => setSidebarOpen(false)}>
+            <FiX />
+          </button>
         </div>
 
         <div className="user-profile">
           <FaUserCircle className="avatar" />
-          {sidebarOpen && <div className="user-info"><h4>{settings.fullName}</h4><p>{settings.role}</p></div>}
+          {sidebarOpen && (
+            <div className="user-info">
+              <h4>{settings.fullName}</h4>
+              <p>{settings.role}</p>
+            </div>
+          )}
         </div>
 
         <nav className="sidebar-nav">
@@ -1857,7 +1758,11 @@ const Dashboard = () => {
             { id: 'live-map', icon: <FiMap />, label: 'Carte en direct' },
             { id: 'live-report', icon: <FiMapPin />, label: 'Signalement direct' }
           ].map(item => (
-            <button key={item.id} className={`nav-item ${activeMenu === item.id ? 'active' : ''}`} onClick={() => setActiveMenu(item.id)}>
+            <button
+              key={item.id}
+              className={`nav-item ${activeMenu === item.id ? 'active' : ''}`}
+              onClick={() => handleMenuClick(item.id)}
+            >
               <span className="nav-icon">{item.icon}</span>
               {sidebarOpen && <span>{item.label}</span>}
               {item.badge > 0 && <span className="badge">{item.badge}</span>}
@@ -1866,31 +1771,69 @@ const Dashboard = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="settings-btn" onClick={() => setShowSettingsModal(true)}><FiSettings /> {sidebarOpen && 'Paramètres'}</button>
-          <button className="logout-btn" onClick={() => navigate('/admin/login')}><FiLogOut /> {sidebarOpen && 'Déconnexion'}</button>
+          <button className="settings-btn" onClick={() => setShowSettingsModal(true)}>
+            <FiSettings /> {sidebarOpen && 'Paramètres'}
+          </button>
+          <button className="logout-btn" onClick={() => navigate('/admin/login')}>
+            <FiLogOut /> {sidebarOpen && 'Déconnexion'}
+          </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className={`main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+      <main className={`main-content ${sidebarOpen && !isMobile ? 'sidebar-open' : 'sidebar-closed'}`}>
         <header className="dashboard-header">
-          <div className="header-left">
-            <h1>
-              {activeMenu === 'dashboard' ? 'Dashboard' : 
-               activeMenu === 'reports' ? 'Signalements' : 
-               activeMenu === 'analytics' ? 'Centre d\'analyse' :
-               activeMenu === 'live-map' ? 'Carte en direct' :
-               activeMenu === 'live-report' ? 'Signalement en direct' : 'Dashboard'}
-            </h1>
-            <p>Bienvenue, {settings.fullName.split(' ')[0]}</p>
+          <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* ========== HAMBURGER — opens sidebar, visible on all screens ========== */}
+            <button
+              className="toggle-btn"
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: '#1e293b',
+                border: 'none',
+                color: '#f1f5f9',
+                padding: '10px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <FiMenu />
+            </button>
+            <div>
+              <h1>
+                {activeMenu === 'dashboard' ? 'Dashboard' :
+                  activeMenu === 'reports' ? 'Signalements' :
+                    activeMenu === 'analytics' ? "Centre d'analyse" :
+                      activeMenu === 'live-map' ? 'Carte en direct' :
+                        activeMenu === 'live-report' ? 'Signalement en direct' : 'Dashboard'}
+              </h1>
+              <p>Bienvenue, {settings.fullName.split(' ')[0]}</p>
+            </div>
           </div>
+
           <div className="header-right">
-            <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>{darkMode ? <FiSun /> : <FiMoon />}</button>
+            <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <FiSun /> : <FiMoon />}
+            </button>
             <div className="notifications-wrapper">
-              <button className="notif-btn" onClick={() => setShowNotifications(!showNotifications)}><FiBell />{notifications.filter(n => !n.read).length > 0 && <span className="notif-badge">{notifications.filter(n => !n.read).length}</span>}</button>
+              <button className="notif-btn" onClick={() => setShowNotifications(!showNotifications)}>
+                <FiBell />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="notif-badge">{notifications.filter(n => !n.read).length}</span>
+                )}
+              </button>
               {showNotifications && <NotificationsDropdown />}
             </div>
-            <button className="refresh-btn" onClick={() => { loadReports(); addNotification('Actualisé', 'Les données ont été actualisées', '🔄'); }}><FiRefreshCw /></button>
+            <button
+              className="refresh-btn"
+              onClick={() => { loadReports(); addNotification('Actualisé', 'Les données ont été actualisées', '🔄'); }}
+            >
+              <FiRefreshCw />
+            </button>
           </div>
         </header>
 

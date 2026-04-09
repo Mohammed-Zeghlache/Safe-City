@@ -25,13 +25,13 @@ const Landing3 = () => {
         </div>
 
         <div className="problem-card">
-          <img src={Eclairage2} alt="Eclairage publique" className="problem-image" />
-          <p className="problem-name">Eclairage publique</p>
+          <img src={Eclairage2} alt="Public lighting" className="problem-image" />
+          <p className="problem-name">Public lighting</p>
         </div>
 
         <div className="problem-card">
-          <img src={Danger} alt="Dangers zone" className="problem-image" />
-          <p className="problem-name">Dangers zone</p>
+          <img src={Danger} alt="Danger zone" className="problem-image" />
+          <p className="problem-name">Danger zone</p>
         </div>
 
         <div className="problem-card">
@@ -40,8 +40,8 @@ const Landing3 = () => {
         </div>
 
          <div className="problem-card">
-          <img src={Dechet} alt="déchet" className="problem-image" />
-          <p className="problem-name">déchet</p>
+          <img src={Dechet} alt="Waste / Litter" className="problem-image" />
+          <p className="problem-name">Waste / Litter</p>
         </div>
 
         <div className="problem-card">
@@ -50,13 +50,13 @@ const Landing3 = () => {
         </div>
 
         <div className="problem-card">
-          <img src={Agression} alt="agression" className="problem-image" />
-          <p className="problem-name">agression</p>
+          <img src={Agression} alt="Assault" className="problem-image" />
+          <p className="problem-name">Assault</p>
         </div>
 
          <div className="problem-card">
-          <img src={Route} alt="route" className="problem-image" />
-          <p className="problem-name">Route degradee</p>
+          <img src={Route} alt="Degraded road" className="problem-image" />
+          <p className="problem-name">Degraded road</p>
         </div>
         
 
